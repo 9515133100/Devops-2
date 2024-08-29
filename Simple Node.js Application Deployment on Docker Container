@@ -2,10 +2,11 @@ git init
 git add.
 git commit -m "Add Dockerfile, Kubernetes deployment, Terraform and Ansible configuration"
 git branch -M main
+git remote add origin <YOUR_REPO_URL>
+git push -u origin main
 const express = require('express');
 const app = express();
 const port = 3000;
-
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
@@ -13,3 +14,42 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
 });
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          timeoutSeconds: 3
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "250m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+ansible-playbook -i hosts playbook.yml
